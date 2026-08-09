@@ -1,0 +1,2 @@
+# blockchain-AI-framework-for-tamper-proof-water-resource-allocation-and-realtime-quality-prediction
+Developed a Blockchain and AI-based water resource management system for secure and transparent water allocation. Integrated IoT sensors to monitor real-time water quality and used machine learning to predict contamination. Blockchain ensures tamper-proof records, enabling reliable monitoring, faster decisions, and sustainable water management.
