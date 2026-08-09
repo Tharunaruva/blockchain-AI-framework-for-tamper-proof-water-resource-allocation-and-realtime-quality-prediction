@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blockchain AI Water Resource Management System</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #eef4fb;
+      color: #1a2e44;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0d3b6e 0%, #1565c0 60%, #1e88e5 100%);
+      color: #fff;
+      padding: 36px 40px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      right: -60px; top: -60px;
+      width: 280px; height: 280px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    header p.subtitle {
+      font-size: 13px;
+      opacity: 0.82;
+      letter-spacing: 0.3px;
+    }
+    header .meta {
+      margin-top: 14px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 30px 24px 60px; }
+
+    /* ── Section card ── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(13,59,110,0.10);
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+    .card-header {
+      background: linear-gradient(90deg, #0d3b6e 0%, #1565c0 100%);
+      color: #fff;
+      padding: 14px 22px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-header .icon { font-size: 18px; }
+    .card-body { padding: 22px; }
+
+    /* ── Summary grid ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .stat-box {
+      background: #f0f6ff;
+      border: 1px solid #c5dcf8;
+      border-radius: 8px;
+      padding: 18px 16px;
+      text-align: center;
+    }
+    .stat-box .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1565c0;
+      display: block;
+    }
+    .stat-box .stat-label {
+      font-size: 12px;
+      color: #5c7a9b;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-box.warn .stat-value { color: #c0392b; }
+    .stat-box.ok   .stat-value { color: #1e8449; }
+
+    /* ── Blockchain status banner ── */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .status-ok  { background: #e8f8ef; border: 1px solid #a3d9b1; color: #1e6e3a; }
+    .status-err { background: #fdecea; border: 1px solid #f5aba3; color: #922b21; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead tr {
+      background: #0d3b6e;
+      color: #fff;
+    }
+    thead th {
+      padding: 11px 12px;
+      text-align: left;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    tbody tr { border-bottom: 1px solid #e3edf8; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 9px 12px; vertical-align: middle; }
+    tbody tr:hover { background: #f5f9ff !important; }
+
+    /* ── Row colours ── */
+    tr.row-anomaly { background: #fff0f0; }
+    tr.row-normal  { background: #f5fff8; }
+
+    /* ── Badges ── */
+    .badge-anomaly, .badge-normal {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+    .badge-anomaly { background: #fdecea; color: #c0392b; border: 1px solid #f5aba3; }
+    .badge-normal  { background: #e8f8ef; color: #1e6e3a; border: 1px solid #a3d9b1; }
+
+    /* ── Hash cells ── */
+    .hash-cell {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #1565c0;
+      letter-spacing: 0.3px;
+    }
+    .reason-cell { color: #922b21; font-size: 12px; }
+
+    /* ── Allocation bars ── */
+    .allocation-meta {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .alloc-stat {
+      background: #f0f6ff;
+      border: 1px solid #c5dcf8;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 13px;
+    }
+    .alloc-stat strong { color: #1565c0; }
+    .bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .bar-label {
+      width: 110px;
+      font-weight: 600;
+      font-size: 13px;
+      flex-shrink: 0;
+      color: #1a2e44;
+    }
+    .bar-track {
+      flex: 1;
+      background: #e3edf8;
+      border-radius: 6px;
+      height: 30px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      transition: width 0.4s ease;
+      min-width: 40px;
+    }
+    .bar-text {
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      padding-left: 12px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    }
+
+    /* ── WHO standards callout ── */
+    .who-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .who-box {
+      background: #f0f6ff;
+      border: 1px solid #c5dcf8;
+      border-radius: 8px;
+      padding: 12px 14px;
+      text-align: center;
+    }
+    .who-box .who-param { font-weight: 700; color: #0d3b6e; font-size: 13px; }
+    .who-box .who-limit { font-size: 12px; color: #5c7a9b; margin-top: 3px; }
+
+    /* ── Anomaly legend ── */
+    .legend {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      align-items: center;
+    }
+    .legend-dot {
+      width: 14px; height: 14px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    .dot-red   { background: #fdecea; border: 1px solid #f5aba3; }
+    .dot-green { background: #e8f8ef; border: 1px solid #a3d9b1; }
+
+    /* ── Scrollable table wrapper ── */
+    .table-scroll { overflow-x: auto; }
+
+    /* ── Footer ── */
+    footer {
+      background: linear-gradient(135deg, #0d3b6e 0%, #1565c0 100%);
+      color: rgba(255,255,255,0.88);
+      text-align: center;
+      padding: 20px 24px;
+      font-size: 13px;
+      letter-spacing: 0.4px;
+    }
+    footer .lock-icon { font-size: 16px; margin-right: 6px; }
+    footer span { opacity: 0.65; display: block; margin-top: 4px; font-size: 11px; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════ HEADER ════════════════════ -->
+<header>
+  <h1>💧 Blockchain AI Water Resource Management System</h1>
+  <p class="subtitle">Real-Time Quality Monitoring · Tamper-Proof Ledger · Intelligent Allocation</p>
+  <p class="meta">Report generated: 2026-04-16 20:25:14 &nbsp;|&nbsp; Data source: water_data.csv &nbsp;|&nbsp; Blocks: 50</p>
+</header>
+
+<div class="container">
+
+  <!-- ════════════════════ SUMMARY ════════════════════ -->
+  <div class="card">
+    <div class="card-header"><span class="icon">📊</span> System Summary</div>
+    <div class="card-body">
+      <div class="summary-grid">
+        <div class="stat-box">
+          <span class="stat-value">50</span>
+          <div class="stat-label">Total Sensor Readings</div>
+        </div>
+        <div class="stat-box warn">
+          <span class="stat-value">13</span>
+          <div class="stat-label">Anomalies Detected</div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value">Medium</span>
+          <div class="stat-label">Allocation Tier (455.5 L/s avg)</div>
+        </div>
+        <div class="stat-box ok">
+          <span class="stat-value">50</span>
+          <div class="stat-label">Blockchain Blocks</div>
+        </div>
+      </div>
+      <div class="status-banner status-ok" style="margin-top:18px;">
+        <span style="font-size:20px;">🔒</span>
+        <span>Blockchain Integrity: ✅ VERIFIED — No tampering detected</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ WATER QUALITY TABLE ════════════════════ -->
+  <div class="card">
+    <div class="card-header"><span class="icon">🧪</span> Water Quality Readings — All 50 Sensor Records</div>
+    <div class="card-body">
+      <div class="who-grid">
+        <div class="who-box"><div class="who-param">pH</div><div class="who-limit">6.5 – 8.5</div></div>
+        <div class="who-box"><div class="who-param">Turbidity</div><div class="who-limit">&lt; 4.0 NTU</div></div>
+        <div class="who-box"><div class="who-param">Dissolved O₂</div><div class="who-limit">&gt; 5.0 mg/L</div></div>
+        <div class="who-box"><div class="who-param">Temperature</div><div class="who-limit">&lt; 30 °C</div></div>
+      </div>
+      <div class="legend">
+        <span><span class="legend-dot dot-red"></span> Anomaly (fails WHO standard)</span>
+        <span><span class="legend-dot dot-green"></span> Normal (passes all checks)</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Timestamp</th><th>Location</th><th>pH</th>
+              <th>Turbidity (NTU)</th><th>DO (mg/L)</th><th>Flow (L/s)</th>
+              <th>Temp (°C)</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+        <tr class="row-anomaly">
+          <td>1</td>
+          <td>2024-01-01 00:00:00</td>
+          <td>Reservoir-C</td>
+          <td>6.01</td>
+          <td>0.58</td>
+          <td>6.6</td>
+          <td>256.2</td>
+          <td>28.3</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>2</td>
+          <td>2024-01-01 00:30:00</td>
+          <td>River-A</td>
+          <td>7.98</td>
+          <td>2.14</td>
+          <td>7.86</td>
+          <td>122.2</td>
+          <td>19.3</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>3</td>
+          <td>2024-01-01 01:00:00</td>
+          <td>River-A</td>
+          <td>5.83</td>
+          <td>0.58</td>
+          <td>6.3</td>
+          <td>554.9</td>
+          <td>25.6</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>4</td>
+          <td>2024-01-01 01:30:00</td>
+          <td>Lake-B</td>
+          <td>7.4</td>
+          <td>1.33</td>
+          <td>8.98</td>
+          <td>631.2</td>
+          <td>20.2</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>5</td>
+          <td>2024-01-01 02:00:00</td>
+          <td>River-A</td>
+          <td>7.18</td>
+          <td>0.97</td>
+          <td>9.33</td>
+          <td>335.6</td>
+          <td>19.3</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>6</td>
+          <td>2024-01-01 02:30:00</td>
+          <td>River-A</td>
+          <td>7.22</td>
+          <td>6.16</td>
+          <td>6.56</td>
+          <td>130.4</td>
+          <td>24.4</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>7</td>
+          <td>2024-01-01 03:00:00</td>
+          <td>Lake-B</td>
+          <td>8.45</td>
+          <td>1.64</td>
+          <td>7.71</td>
+          <td>680.6</td>
+          <td>26.7</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>8</td>
+          <td>2024-01-01 03:30:00</td>
+          <td>River-A</td>
+          <td>7.65</td>
+          <td>2.61</td>
+          <td>5.68</td>
+          <td>259.5</td>
+          <td>22.1</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>9</td>
+          <td>2024-01-01 04:00:00</td>
+          <td>River-A</td>
+          <td>8.21</td>
+          <td>3.1</td>
+          <td>7.02</td>
+          <td>417.4</td>
+          <td>29.7</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>10</td>
+          <td>2024-01-01 04:30:00</td>
+          <td>Reservoir-C</td>
+          <td>7.24</td>
+          <td>1.13</td>
+          <td>6.57</td>
+          <td>755.7</td>
+          <td>27.1</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>11</td>
+          <td>2024-01-01 05:00:00</td>
+          <td>Reservoir-C</td>
+          <td>7.77</td>
+          <td>2.1</td>
+          <td>6.48</td>
+          <td>423.6</td>
+          <td>21.8</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>12</td>
+          <td>2024-01-01 05:30:00</td>
+          <td>River-A</td>
+          <td>7.88</td>
+          <td>1.16</td>
+          <td>6.8</td>
+          <td>637.8</td>
+          <td>18.8</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>13</td>
+          <td>2024-01-01 06:00:00</td>
+          <td>Reservoir-C</td>
+          <td>8.11</td>
+          <td>1.7</td>
+          <td>5.76</td>
+          <td>739.2</td>
+          <td>25.9</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>14</td>
+          <td>2024-01-01 06:30:00</td>
+          <td>Lake-B</td>
+          <td>7.13</td>
+          <td>2.47</td>
+          <td>7.08</td>
+          <td>740.2</td>
+          <td>24.4</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>15</td>
+          <td>2024-01-01 07:00:00</td>
+          <td>Reservoir-C</td>
+          <td>6.78</td>
+          <td>2.73</td>
+          <td>7.66</td>
+          <td>622.9</td>
+          <td>24.0</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>16</td>
+          <td>2024-01-01 07:30:00</td>
+          <td>River-A</td>
+          <td>7.3</td>
+          <td>1.16</td>
+          <td>9.49</td>
+          <td>456.7</td>
+          <td>19.3</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>17</td>
+          <td>2024-01-01 08:00:00</td>
+          <td>Lake-B</td>
+          <td>8.22</td>
+          <td>0.96</td>
+          <td>6.14</td>
+          <td>576.3</td>
+          <td>26.3</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>18</td>
+          <td>2024-01-01 08:30:00</td>
+          <td>River-A</td>
+          <td>7.26</td>
+          <td>5.85</td>
+          <td>7.62</td>
+          <td>779.8</td>
+          <td>30.1</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>19</td>
+          <td>2024-01-01 09:00:00</td>
+          <td>Lake-B</td>
+          <td>7.86</td>
+          <td>0.84</td>
+          <td>9.04</td>
+          <td>625.6</td>
+          <td>28.8</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>20</td>
+          <td>2024-01-01 09:30:00</td>
+          <td>Lake-B</td>
+          <td>6.72</td>
+          <td>1.8</td>
+          <td>7.31</td>
+          <td>767.7</td>
+          <td>30.3</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>21</td>
+          <td>2024-01-01 10:00:00</td>
+          <td>Reservoir-C</td>
+          <td>8.44</td>
+          <td>2.79</td>
+          <td>7.53</td>
+          <td>174.5</td>
+          <td>26.8</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>22</td>
+          <td>2024-01-01 10:30:00</td>
+          <td>Reservoir-C</td>
+          <td>7.52</td>
+          <td>1.1</td>
+          <td>7.0</td>
+          <td>213.1</td>
+          <td>31.3</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>23</td>
+          <td>2024-01-01 11:00:00</td>
+          <td>Lake-B</td>
+          <td>8.34</td>
+          <td>2.3</td>
+          <td>7.45</td>
+          <td>178.3</td>
+          <td>23.1</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>24</td>
+          <td>2024-01-01 11:30:00</td>
+          <td>River-A</td>
+          <td>6.98</td>
+          <td>1.22</td>
+          <td>7.77</td>
+          <td>155.1</td>
+          <td>28.2</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>25</td>
+          <td>2024-01-01 12:00:00</td>
+          <td>River-A</td>
+          <td>8.46</td>
+          <td>2.1</td>
+          <td>6.0</td>
+          <td>561.8</td>
+          <td>31.3</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>26</td>
+          <td>2024-01-01 12:30:00</td>
+          <td>Reservoir-C</td>
+          <td>7.03</td>
+          <td>3.12</td>
+          <td>7.19</td>
+          <td>248.3</td>
+          <td>25.6</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>27</td>
+          <td>2024-01-01 13:00:00</td>
+          <td>Reservoir-C</td>
+          <td>7.88</td>
+          <td>2.64</td>
+          <td>7.1</td>
+          <td>570.2</td>
+          <td>23.2</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>28</td>
+          <td>2024-01-01 13:30:00</td>
+          <td>Reservoir-C</td>
+          <td>7.4</td>
+          <td>5.83</td>
+          <td>5.76</td>
+          <td>114.7</td>
+          <td>25.8</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>29</td>
+          <td>2024-01-01 14:00:00</td>
+          <td>Lake-B</td>
+          <td>6.94</td>
+          <td>0.71</td>
+          <td>8.02</td>
+          <td>260.3</td>
+          <td>30.7</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>30</td>
+          <td>2024-01-01 14:30:00</td>
+          <td>Reservoir-C</td>
+          <td>6.64</td>
+          <td>1.21</td>
+          <td>8.18</td>
+          <td>250.0</td>
+          <td>19.9</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>31</td>
+          <td>2024-01-01 15:00:00</td>
+          <td>Reservoir-C</td>
+          <td>7.65</td>
+          <td>1.23</td>
+          <td>7.39</td>
+          <td>384.9</td>
+          <td>19.3</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>32</td>
+          <td>2024-01-01 15:30:00</td>
+          <td>Reservoir-C</td>
+          <td>7.36</td>
+          <td>1.77</td>
+          <td>7.37</td>
+          <td>610.4</td>
+          <td>27.4</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>33</td>
+          <td>2024-01-01 16:00:00</td>
+          <td>River-A</td>
+          <td>6.7</td>
+          <td>1.71</td>
+          <td>6.86</td>
+          <td>703.2</td>
+          <td>21.5</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>34</td>
+          <td>2024-01-01 16:30:00</td>
+          <td>River-A</td>
+          <td>7.57</td>
+          <td>0.92</td>
+          <td>6.23</td>
+          <td>423.8</td>
+          <td>30.2</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>35</td>
+          <td>2024-01-01 17:00:00</td>
+          <td>River-A</td>
+          <td>7.39</td>
+          <td>3.08</td>
+          <td>7.7</td>
+          <td>135.4</td>
+          <td>32.0</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>36</td>
+          <td>2024-01-01 17:30:00</td>
+          <td>River-A</td>
+          <td>8.44</td>
+          <td>3.28</td>
+          <td>8.89</td>
+          <td>216.4</td>
+          <td>24.8</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>37</td>
+          <td>2024-01-01 18:00:00</td>
+          <td>Lake-B</td>
+          <td>8.23</td>
+          <td>3.21</td>
+          <td>6.16</td>
+          <td>101.5</td>
+          <td>23.5</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>38</td>
+          <td>2024-01-01 18:30:00</td>
+          <td>Lake-B</td>
+          <td>7.07</td>
+          <td>2.59</td>
+          <td>8.42</td>
+          <td>648.4</td>
+          <td>27.3</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>39</td>
+          <td>2024-01-01 19:00:00</td>
+          <td>Reservoir-C</td>
+          <td>6.81</td>
+          <td>1.39</td>
+          <td>9.37</td>
+          <td>505.4</td>
+          <td>25.6</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>40</td>
+          <td>2024-01-01 19:30:00</td>
+          <td>River-A</td>
+          <td>7.13</td>
+          <td>0.65</td>
+          <td>7.41</td>
+          <td>743.6</td>
+          <td>25.4</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>41</td>
+          <td>2024-01-01 20:00:00</td>
+          <td>River-A</td>
+          <td>8.42</td>
+          <td>5.25</td>
+          <td>6.24</td>
+          <td>516.5</td>
+          <td>27.5</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>42</td>
+          <td>2024-01-01 20:30:00</td>
+          <td>River-A</td>
+          <td>7.31</td>
+          <td>3.32</td>
+          <td>7.78</td>
+          <td>505.2</td>
+          <td>18.6</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>43</td>
+          <td>2024-01-01 21:00:00</td>
+          <td>Reservoir-C</td>
+          <td>7.34</td>
+          <td>2.25</td>
+          <td>7.59</td>
+          <td>754.3</td>
+          <td>20.9</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>44</td>
+          <td>2024-01-01 21:30:00</td>
+          <td>River-A</td>
+          <td>7.13</td>
+          <td>1.3</td>
+          <td>6.02</td>
+          <td>551.9</td>
+          <td>24.4</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>45</td>
+          <td>2024-01-01 22:00:00</td>
+          <td>Reservoir-C</td>
+          <td>6.52</td>
+          <td>2.36</td>
+          <td>7.75</td>
+          <td>170.0</td>
+          <td>25.5</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>46</td>
+          <td>2024-01-01 22:30:00</td>
+          <td>River-A</td>
+          <td>7.03</td>
+          <td>3.3</td>
+          <td>9.02</td>
+          <td>715.5</td>
+          <td>23.2</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>47</td>
+          <td>2024-01-01 23:00:00</td>
+          <td>Reservoir-C</td>
+          <td>7.38</td>
+          <td>2.13</td>
+          <td>6.71</td>
+          <td>788.7</td>
+          <td>29.3</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-anomaly">
+          <td>48</td>
+          <td>2024-01-01 23:30:00</td>
+          <td>River-A</td>
+          <td>6.52</td>
+          <td>2.95</td>
+          <td>6.7</td>
+          <td>564.4</td>
+          <td>31.1</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>49</td>
+          <td>2024-01-02 00:00:00</td>
+          <td>River-A</td>
+          <td>7.03</td>
+          <td>3.17</td>
+          <td>8.47</td>
+          <td>208.8</td>
+          <td>21.9</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr>
+        <tr class="row-normal">
+          <td>50</td>
+          <td>2024-01-02 00:30:00</td>
+          <td>River-A</td>
+          <td>7.94</td>
+          <td>1.11</td>
+          <td>8.04</td>
+          <td>284.8</td>
+          <td>24.8</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+        </tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ ANOMALY DETAIL ════════════════════ -->
+  <div class="card">
+    <div class="card-header"><span class="icon">🚨</span> Anomaly Detail — 13 Flagged Readings</div>
+    <div class="card-body">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th><th>Location</th><th>pH</th>
+              <th>Turbidity</th><th>DO (mg/L)</th><th>Temp (°C)</th><th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+        <tr>
+          <td>2024-01-01 00:00:00</td>
+          <td>Reservoir-C</td>
+          <td>6.01</td>
+          <td>0.58</td>
+          <td>6.6</td>
+          <td>28.3</td>
+          <td class="reason-cell">pH 6.01 is below minimum 6.5</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 01:00:00</td>
+          <td>River-A</td>
+          <td>5.83</td>
+          <td>0.58</td>
+          <td>6.3</td>
+          <td>25.6</td>
+          <td class="reason-cell">pH 5.83 is below minimum 6.5</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 02:30:00</td>
+          <td>River-A</td>
+          <td>7.22</td>
+          <td>6.16</td>
+          <td>6.56</td>
+          <td>24.4</td>
+          <td class="reason-cell">turbidity 6.16 NTU exceeds maximum 4.0 NTU</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 08:30:00</td>
+          <td>River-A</td>
+          <td>7.26</td>
+          <td>5.85</td>
+          <td>7.62</td>
+          <td>30.1</td>
+          <td class="reason-cell">turbidity 5.85 NTU exceeds maximum 4.0 NTU; temperature 30.1°C exceeds maximum 30.0°C</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 09:30:00</td>
+          <td>Lake-B</td>
+          <td>6.72</td>
+          <td>1.8</td>
+          <td>7.31</td>
+          <td>30.3</td>
+          <td class="reason-cell">temperature 30.3°C exceeds maximum 30.0°C</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 10:30:00</td>
+          <td>Reservoir-C</td>
+          <td>7.52</td>
+          <td>1.1</td>
+          <td>7.0</td>
+          <td>31.3</td>
+          <td class="reason-cell">temperature 31.3°C exceeds maximum 30.0°C</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 12:00:00</td>
+          <td>River-A</td>
+          <td>8.46</td>
+          <td>2.1</td>
+          <td>6.0</td>
+          <td>31.3</td>
+          <td class="reason-cell">temperature 31.3°C exceeds maximum 30.0°C</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 13:30:00</td>
+          <td>Reservoir-C</td>
+          <td>7.4</td>
+          <td>5.83</td>
+          <td>5.76</td>
+          <td>25.8</td>
+          <td class="reason-cell">turbidity 5.83 NTU exceeds maximum 4.0 NTU</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 14:00:00</td>
+          <td>Lake-B</td>
+          <td>6.94</td>
+          <td>0.71</td>
+          <td>8.02</td>
+          <td>30.7</td>
+          <td class="reason-cell">temperature 30.7°C exceeds maximum 30.0°C</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 16:30:00</td>
+          <td>River-A</td>
+          <td>7.57</td>
+          <td>0.92</td>
+          <td>6.23</td>
+          <td>30.2</td>
+          <td class="reason-cell">temperature 30.2°C exceeds maximum 30.0°C</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 17:00:00</td>
+          <td>River-A</td>
+          <td>7.39</td>
+          <td>3.08</td>
+          <td>7.7</td>
+          <td>32.0</td>
+          <td class="reason-cell">temperature 32.0°C exceeds maximum 30.0°C</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 20:00:00</td>
+          <td>River-A</td>
+          <td>8.42</td>
+          <td>5.25</td>
+          <td>6.24</td>
+          <td>27.5</td>
+          <td class="reason-cell">turbidity 5.25 NTU exceeds maximum 4.0 NTU</td>
+        </tr>
+        <tr>
+          <td>2024-01-01 23:30:00</td>
+          <td>River-A</td>
+          <td>6.52</td>
+          <td>2.95</td>
+          <td>6.7</td>
+          <td>31.1</td>
+          <td class="reason-cell">temperature 31.1°C exceeds maximum 30.0°C</td>
+        </tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ WATER ALLOCATION ════════════════════ -->
+  <div class="card">
+    <div class="card-header"><span class="icon">💧</span> Water Allocation Decision</div>
+    <div class="card-body">
+      <div class="allocation-meta">
+        <div class="alloc-stat">Average Flow Rate: <strong>455.46 L/s</strong></div>
+        <div class="alloc-stat">Allocation Tier: <strong>Medium</strong></div>
+        <div class="alloc-stat">Rule: <strong>300–500 L/s</strong></div>
+      </div>
+      
+        <div class="bar-wrap">
+          <div class="bar-label">🌾 Agriculture</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:50%;background:#1565c0;">
+              <span class="bar-text">50%</span>
+            </div>
+          </div>
+        </div>
+      
+        <div class="bar-wrap">
+          <div class="bar-label">🏭 Industry</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:20%;background:#0288d1;">
+              <span class="bar-text">20%</span>
+            </div>
+          </div>
+        </div>
+      
+        <div class="bar-wrap">
+          <div class="bar-label">🏠 Domestic</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:30%;background:#0097a7;">
+              <span class="bar-text">30%</span>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ BLOCKCHAIN LOG ════════════════════ -->
+  <div class="card">
+    <div class="card-header"><span class="icon">⛓️</span> Blockchain Ledger — Last 10 Blocks</div>
+    <div class="card-body">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Block</th><th>Timestamp</th><th>Location</th><th>Status</th>
+              <th>Previous Hash (16 chars)</th><th>Current Hash (16 chars)</th>
+            </tr>
+          </thead>
+          <tbody>
+        <tr>
+          <td>#40</td>
+          <td>2024-01-01 20:00:00</td>
+          <td>River-A</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+          <td class="hash-cell">72dd0338681cc844…</td>
+          <td class="hash-cell">45a37d0272c88b9a…</td>
+        </tr>
+        <tr>
+          <td>#41</td>
+          <td>2024-01-01 20:30:00</td>
+          <td>River-A</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+          <td class="hash-cell">45a37d0272c88b9a…</td>
+          <td class="hash-cell">52ccd4a6294ea6ee…</td>
+        </tr>
+        <tr>
+          <td>#42</td>
+          <td>2024-01-01 21:00:00</td>
+          <td>Reservoir-C</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+          <td class="hash-cell">52ccd4a6294ea6ee…</td>
+          <td class="hash-cell">17786c8b73179581…</td>
+        </tr>
+        <tr>
+          <td>#43</td>
+          <td>2024-01-01 21:30:00</td>
+          <td>River-A</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+          <td class="hash-cell">17786c8b73179581…</td>
+          <td class="hash-cell">8cbd25e96274ed42…</td>
+        </tr>
+        <tr>
+          <td>#44</td>
+          <td>2024-01-01 22:00:00</td>
+          <td>Reservoir-C</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+          <td class="hash-cell">8cbd25e96274ed42…</td>
+          <td class="hash-cell">a15679b1232d4b28…</td>
+        </tr>
+        <tr>
+          <td>#45</td>
+          <td>2024-01-01 22:30:00</td>
+          <td>River-A</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+          <td class="hash-cell">a15679b1232d4b28…</td>
+          <td class="hash-cell">166978b725ea254c…</td>
+        </tr>
+        <tr>
+          <td>#46</td>
+          <td>2024-01-01 23:00:00</td>
+          <td>Reservoir-C</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+          <td class="hash-cell">166978b725ea254c…</td>
+          <td class="hash-cell">77468e9493ac8eb3…</td>
+        </tr>
+        <tr>
+          <td>#47</td>
+          <td>2024-01-01 23:30:00</td>
+          <td>River-A</td>
+          <td><span class="badge-anomaly">ANOMALY</span></td>
+          <td class="hash-cell">77468e9493ac8eb3…</td>
+          <td class="hash-cell">d9416e8ff4c9767a…</td>
+        </tr>
+        <tr>
+          <td>#48</td>
+          <td>2024-01-02 00:00:00</td>
+          <td>River-A</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+          <td class="hash-cell">d9416e8ff4c9767a…</td>
+          <td class="hash-cell">0f33e75bf67add6a…</td>
+        </tr>
+        <tr>
+          <td>#49</td>
+          <td>2024-01-02 00:30:00</td>
+          <td>River-A</td>
+          <td><span class="badge-normal">NORMAL</span></td>
+          <td class="hash-cell">0f33e75bf67add6a…</td>
+          <td class="hash-cell">ef9c00da8496251c…</td>
+        </tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ════════════════════ FOOTER ════════════════════ -->
+<footer>
+  <div><span class="lock-icon">🔒</span>All records secured by SHA-256 hash chain</div>
+  <span>Blockchain AI Framework for Tamper-Proof Water Resource Allocation &amp; Real-Time Quality Prediction &nbsp;|&nbsp; 2026-04-16 20:25:14</span>
+</footer>
+
+</body>
+</html>
